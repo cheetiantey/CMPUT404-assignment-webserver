@@ -49,7 +49,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 #     </html>
                 # """)
                 # self.request.sendall(bytearray("OK",'utf-8'))
-                self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
+                # self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
+                file = open("./www/index.html")
+                body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
+                body += file.read()
+                print(body)
+                file.close()
+
+                self.request.sendall(bytearray(body,'utf-8'))
 
             else:
                 # We can only serve files in "./www" and deeper
