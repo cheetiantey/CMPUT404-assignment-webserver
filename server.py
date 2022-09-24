@@ -36,11 +36,16 @@ class MyWebServer(socketserver.BaseRequestHandler):
             The body of the webpage to be rendered by the web client
         """
         if self.path.startswith(b"/www/deep"):
-            file = open("./www/deep/index.html")
+            html_file = open("./www/deep/index.html")
+            css_file = open("./www/deep/deep.css")
             body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
-            body += file.read()
-            print(body)
-            file.close()
+            body += "<style>"
+            body += css_file.read()
+            body += "</style>"
+            body += html_file.read()
+            html_file.close()
+            css_file.close()
+            # print(body)
 
         elif self.path.startswith(b"/www"):
             print("TRUE**************")
@@ -53,11 +58,18 @@ class MyWebServer(socketserver.BaseRequestHandler):
             # """)
             # self.request.sendall(bytearray("OK",'utf-8'))
             # self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
-            file = open("./www/index.html")
+            html_file = open("./www/index.html")
+            css_file = open("./www/base.css")
             body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
-            body += file.read()
-            print(body)
-            file.close()
+            body += "<style>"
+            body += css_file.read()
+            body += "</style>"
+            body += "\n"
+            body += html_file.read()
+            
+            html_file.close()
+            css_file.close()
+            # print(body)
         else:
             # We can only serve files in "./www" and deeper
             body = "HTTP/1.1 404 NOT FOUND\nContent-Type: text/html\n\n"
