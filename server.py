@@ -31,8 +31,41 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        self.data = self.data.split(b" ")
+
+        self.http_method = self.data[0]
+        self.path = self.data[1]
+
+        if self.http_method == b"GET":
+            print("THIS IS A GET REQUEST")
+            print()
+            if self.path.startswith(b"/www"):
+                print("TRUE**************")
+                # self.request.sendall(b"""
+                #     <html>
+                #         <body>
+                #             <h1>Hello, world!</h1>
+                #         </body>
+                #     </html>
+                # """)
+                # self.request.sendall(bytearray("OK",'utf-8'))
+                self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
+
+            else:
+                # We can only serve files in "./www" and deeper
+                pass
+        else:
+            pass
+
+        print(self.data)
+        print()
+        print(self.http_method)
+        print()
+        print(self.path)
+        print()
+
+        # print ("Got a request of: %s\n" % self.data)
+        # self.request.sendall(bytearray("OK",'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
