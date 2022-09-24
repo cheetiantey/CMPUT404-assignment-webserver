@@ -28,6 +28,43 @@ import socketserver
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
+
+    def handle_get_request(self):
+        """Fetches the body of the webpage to be rendered by the web client
+
+        Returns:
+            The body of the webpage to be rendered by the web client
+        """
+        if self.path.startswith(b"/www/deep"):
+            file = open("./www/deep/index.html")
+            body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
+            body += file.read()
+            print(body)
+            file.close()
+
+        elif self.path.startswith(b"/www"):
+            print("TRUE**************")
+            # self.request.sendall(b"""
+            #     <html>
+            #         <body>
+            #             <h1>Hello, world!</h1>
+            #         </body>
+            #     </html>
+            # """)
+            # self.request.sendall(bytearray("OK",'utf-8'))
+            # self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
+            file = open("./www/index.html")
+            body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
+            body += file.read()
+            print(body)
+            file.close()
+        else:
+            # We can only serve files in "./www" and deeper
+            body = "HTTP/1.1 404 NOT FOUND\nContent-Type: text/html\n\n"
+            body += "<HTML><body>Error 404 Not Found</body></HTML>"
+            print(body)
+        
+        return body
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
@@ -39,28 +76,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if self.http_method == b"GET":
             print("THIS IS A GET REQUEST")
             print()
-            if self.path.startswith(b"/www"):
-                print("TRUE**************")
-                # self.request.sendall(b"""
-                #     <html>
-                #         <body>
-                #             <h1>Hello, world!</h1>
-                #         </body>
-                #     </html>
-                # """)
-                # self.request.sendall(bytearray("OK",'utf-8'))
-                # self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
-                file = open("./www/index.html")
-                body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
-                body += file.read()
-                print(body)
-                file.close()
-
-                self.request.sendall(bytearray(body,'utf-8'))
-
-            else:
-                # We can only serve files in "./www" and deeper
-                pass
+            
+            body = self.handle_get_request()
+            self.request.sendall(bytearray(body,'utf-8'))
         else:
             pass
 
