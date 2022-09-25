@@ -35,29 +35,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
         Returns:
             The body of the webpage to be rendered by the web client
         """
-        if self.path.startswith(b"/www/deep"):
-            html_file = open("./www/deep/index.html")
-            css_file = open("./www/deep/deep.css")
-            body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
-            body += "<style>"
-            body += css_file.read()
-            body += "</style>"
-            body += html_file.read()
-            html_file.close()
-            css_file.close()
-            # print(body)
-
-        elif self.path.startswith(b"/www"):
-            print("TRUE**************")
-            # self.request.sendall(b"""
-            #     <html>
-            #         <body>
-            #             <h1>Hello, world!</h1>
-            #         </body>
-            #     </html>
-            # """)
-            # self.request.sendall(bytearray("OK",'utf-8'))
-            # self.request.send(b'HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body><h1>Hello, world!</h1></body></html>')
+        # elif self.path.startswith(b"/www"):
+        # elif self.path.startswith(b"/"):
+        if self.path == b"/" or self.path ==  b"/index.html":
             html_file = open("./www/index.html")
             css_file = open("./www/base.css")
             body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
@@ -70,6 +50,30 @@ class MyWebServer(socketserver.BaseRequestHandler):
             html_file.close()
             css_file.close()
             # print(body)
+        elif self.path == b"/base.css":
+            css_file = open("./www/base.css")
+            body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n"
+            body += "<style>\n"
+            body += css_file.read()
+            body += "</style>"
+            body += "\n"
+
+            css_file.close()
+
+        # if self.path.startswith(b"/www/deep"):
+        # if self.path.startswith(b"/deep"):
+        elif self.path == b"/deep/" or self.path == b"/deep/index.html":
+            html_file = open("./www/deep/index.html")
+            css_file = open("./www/deep/deep.css")
+            body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n"
+            body += "<style>"
+            body += css_file.read()
+            body += "</style>"
+            body += html_file.read()
+            html_file.close()
+            css_file.close()
+            # print(body)
+
         else:
             # We can only serve files in "./www" and deeper
             body = "HTTP/1.1 404 NOT FOUND\nContent-Type: text/html\n\n"
@@ -78,6 +82,16 @@ class MyWebServer(socketserver.BaseRequestHandler):
         
         return body
     
+    def handle_other_request(self):
+        """Attempts to handle HTTP requests that aren't GET
+
+        Returns: A 405 error code as this webserver doesn't support HTTP methods other than GET
+        """
+        body = "HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\n\n"
+        body += "<HTML><body>405 Method Not Allowed</body></HTML>"
+
+        return body
+
     def handle(self):
         self.data = self.request.recv(1024).strip()
         self.data = self.data.split(b" ")
@@ -85,24 +99,12 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.http_method = self.data[0]
         self.path = self.data[1]
 
-        if self.http_method == b"GET":
-            print("THIS IS A GET REQUEST")
-            print()
-            
+        if self.http_method == b"GET":            
             body = self.handle_get_request()
             self.request.sendall(bytearray(body,'utf-8'))
         else:
-            pass
-
-        print(self.data)
-        print()
-        print(self.http_method)
-        print()
-        print(self.path)
-        print()
-
-        # print ("Got a request of: %s\n" % self.data)
-        # self.request.sendall(bytearray("OK",'utf-8'))
+            body = self.handle_other_request()
+            self.request.sendall(bytearray(body, 'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
