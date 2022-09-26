@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -35,8 +36,74 @@ class MyWebServer(socketserver.BaseRequestHandler):
         Returns:
             The body of the webpage to be rendered by the web client
         """
-        # elif self.path.startswith(b"/www"):
-        # elif self.path.startswith(b"/"):
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        requested_path = current_path + "/www" + str(self.path, "utf-8")
+        print("self.path: ", self.path)
+
+        requested_html_filename = requested_path + "index.html" if requested_path[-1] == "/" else requested_path
+        print("requested_html_filename is: ", requested_html_filename)
+
+        if requested_path[-1] == "/":
+            requested_css_filename = requested_path + "base.css" # TODO: Add support for "deep.css" as well
+            requested_css_filename = requested_path + "base.css" if "deep" not in requested_path else requested_path + "deep.css"
+        else:
+            requested_css_filename = requested_path.replace("index.html", "deep.css") if "deep" in requested_path else requested_path.replace("index.html", "base.css")
+            print("requested_css_filename", requested_css_filename)
+
+        body = ""
+
+        try:
+            print("HTML: ", requested_html_filename)
+            html_file = open(requested_html_filename) if "css" not in requested_html_filename else False
+            print("success1.1")
+            css_file = open(requested_css_filename)
+            # print("success1.2")
+
+            body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" if html_file else "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
+            # body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
+            body += "<style>"
+            body += css_file.read()
+            body += "</style>\n"
+            
+            print(body)
+            if html_file:
+                body += html_file.read()
+                html_file.close()
+
+            css_file.close()
+            print("success2")
+        except:
+            try:
+                print("HELLO, WORLD!!!")
+                css_file = open(requested_css_filename)
+                body += "<style>"
+                body += css_file.read()
+                body += "</style>\n"
+                css_file.close()
+            except:
+                # We can only serve files in "./www" and deeper
+                body = "HTTP/1.1 404 NOT FOUND\nContent-Type: text/html\n\n"
+                body += "<HTML><body>Error 404 Not Found</body></HTML>"
+        
+        return body
+    
+    def handle_other_request(self):
+        """Attempts to handle HTTP requests that aren't GET
+
+        Returns: A 405 error code as this webserver doesn't support HTTP methods other than GET
+        """
+        body = "HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\n\n"
+        body += "<HTML><body>405 Method Not Allowed</body></HTML>"
+
+        return body
+    
+    def deprecated_handle_get_request(self):
+        """Fetches the body of the webpage to be rendered by the web client
+
+        Returns:
+            The body of the webpage to be rendered by the web client
+        """
+        
         if self.path == b"/" or self.path ==  b"/index.html":
             html_file = open("./www/index.html")
             css_file = open("./www/base.css")
@@ -60,8 +127,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
             css_file.close()
 
-        # if self.path.startswith(b"/www/deep"):
-        # if self.path.startswith(b"/deep"):
         elif self.path == b"/deep/" or self.path == b"/deep/index.html":
             html_file = open("./www/deep/index.html")
             css_file = open("./www/deep/deep.css")
@@ -78,18 +143,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             # We can only serve files in "./www" and deeper
             body = "HTTP/1.1 404 NOT FOUND\nContent-Type: text/html\n\n"
             body += "<HTML><body>Error 404 Not Found</body></HTML>"
-            print(body)
+            # print(body)
         
-        return body
-    
-    def handle_other_request(self):
-        """Attempts to handle HTTP requests that aren't GET
-
-        Returns: A 405 error code as this webserver doesn't support HTTP methods other than GET
-        """
-        body = "HTTP/1.1 405 Method Not Allowed\nContent-Type: text/html\n\n"
-        body += "<HTML><body>405 Method Not Allowed</body></HTML>"
-
         return body
 
     def handle(self):
