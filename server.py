@@ -49,7 +49,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         print("requested_path is: ", requested_path)
         requested_path_split = requested_path.split("/")
-        print(requested_path_split)
+        # print(requested_path_split)
 
         # Referenced from: https://www.geeksforgeeks.org/python-os-path-isdir-method/
         if os.path.isdir(requested_path) and requested_path[-1] != "/":
@@ -57,6 +57,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             body += "<HTML><body>301 Moved Permanently</body></HTML>\n"
 
             return body
+        
         # requested_html_filename = requested_path + "index.html" if requested_path[-1] == "/" else requested_path
         if " " in requested_path_split[-1]:
             requested_html_filename = requested_path + "index.html"
@@ -81,37 +82,47 @@ class MyWebServer(socketserver.BaseRequestHandler):
             requested_css_filename = requested_html_filename.replace("index.html", "deep.css") if "deep" in requested_html_filename else requested_html_filename.replace("index.html", "base.css")
         # requested_css_filename = requested_html_filename.replace("index.html", "deep.css") if "deep" in requested_html_filename else requested_html_filename.replace("index.html", "base.css")
         # print("requested_css_filename", requested_css_filename)
-        print("Requested CSS File is: ", requested_css_filename)
+        # print("Requested CSS File is: ", requested_css_filename)
         body = ""
 
         try:
-            # print("HTML: ", requested_html_filename)
-            html_file = open(requested_html_filename) if "css" not in requested_html_filename else False
-            # print("success1.1")
-            css_file = open(requested_css_filename)
-            # print("success1.2")
+            if "css" not in requested_path:
+                # print("HTML: ", requested_html_filename)
+                html_file = open(requested_html_filename) if "css" not in requested_html_filename else False
+                # print("success1.1")
+                # css_file = open(requested_css_filename)
+                # print("success1.2")
 
-            body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" if html_file else "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
-            # body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
-            body += "<style>"
-            body += css_file.read()
-            body += "</style>\n"
-            
-            # print(body)
-            if html_file:
-                body += html_file.read()
-                html_file.close()
+                body = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" if html_file else "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
+                # body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
+                # body += "<style>"
+                # body += css_file.read()
+                # body += "</style>\n"
+                
+                # print(body)
+                if html_file:
+                    body += html_file.read()
+                    html_file.close()
 
-            css_file.close()
-            # print("success2")
+                # css_file.close()
+            else:
+                print("CSS Area")
+                body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
+                
+                css_file = open(requested_path)
+                # body += "<style>"
+                body += css_file.read()
+                # body += "</style>\n"
+
+                return body
 
         except:
             try:
                 # print("HELLO, WORLD!!!")
                 css_file = open(requested_css_filename)
-                body += "<style>"
-                body += css_file.read()
-                body += "</style>\n"
+                # body += "<style>"
+                # body += css_file.read()
+                # body += "</style>\n"
                 css_file.close()
             except:
                 # We can only serve files in "./www" and deeper
