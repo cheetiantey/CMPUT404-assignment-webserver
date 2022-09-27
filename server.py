@@ -51,6 +51,12 @@ class MyWebServer(socketserver.BaseRequestHandler):
         requested_path_split = requested_path.split("/")
         print(requested_path_split)
 
+        # Referenced from: https://www.geeksforgeeks.org/python-os-path-isdir-method/
+        if os.path.isdir(requested_path) and requested_path[-1] != "/":
+            body = "HTTP/1.1 301 Moved Permanently\nContent-Type: text/html\n\n"
+            body += "<HTML><body>301 Moved Permanently</body></HTML>\n"
+
+            return body
         # requested_html_filename = requested_path + "index.html" if requested_path[-1] == "/" else requested_path
         if " " in requested_path_split[-1]:
             requested_html_filename = requested_path + "index.html"
