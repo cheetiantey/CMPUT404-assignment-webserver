@@ -46,7 +46,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
         current_path = os.path.dirname(os.path.realpath(__file__))
         requested_path = current_path + "/www" + str(self.path, "utf-8")
 
-        print("requested_path is: ", requested_path)
         requested_path_split = requested_path.split("/")
 
         # Referenced from: https://www.geeksforgeeks.org/python-os-path-isdir-method/
@@ -83,7 +82,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     body += html_file.read()
                     html_file.close()
             else:
-                print("CSS Area")
                 body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n" 
                 
                 css_file = open(requested_path)
@@ -98,7 +96,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             except:
                 # We can only serve files in "./www" and deeper
                 body = self.throw_404_error()
-                print("404 sent out")
         
         return body
     
@@ -131,7 +128,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             
             html_file.close()
             css_file.close()
-            # print(body)
         elif self.path == b"/base.css":
             css_file = open("./www/base.css")
             body = "HTTP/1.1 200 OK\nContent-Type: text/css\n\n"
@@ -152,13 +148,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
             body += html_file.read()
             html_file.close()
             css_file.close()
-            # print(body)
 
         else:
             # We can only serve files in "./www" and deeper
             body = "HTTP/1.1 404 NOT FOUND\nContent-Type: text/html\n\n"
             body += "<HTML><body>Error 404 Not Found</body></HTML>"
-            # print(body)
         
         return body
 
